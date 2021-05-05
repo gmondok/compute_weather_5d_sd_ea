@@ -13,7 +13,8 @@ const customError = (data) => {
 // with a Boolean value indicating whether or not they
 // should be required.
 const customParams = {
-  city: ['q', 'city', 'town'],
+  lat: 'lat',
+  lon: 'lon',
   endpoint: false
 }
 
@@ -21,35 +22,80 @@ const createRequest = (input, callback) => {
   // The Validator helps you validate the Chainlink request data
   const validator = new Validator(callback, input, customParams)
   const jobRunID = validator.validated.id
-  const endpoint = validator.validated.data.endpoint || 'weather'
-  const url = `https://api.openweathermap.org/data/2.5/${endpoint}`
-  const q = validator.validated.data.city.toUpperCase()
+  const endpoint = validator.validated.data.endpoint || 'timemachine'
+  const url = `https://api.openweathermap.org/data/2.5/onecall/${endpoint}`
+  const lat = validator.validated.data.lat
+  const lon = validator.validated.data.lon
+  var date = new Date();
+  var time = date.getTime();
   const appid = process.env.API_KEY;
   console.log(appid);
+  var tempArray = [];
 
-  const params = {
-    q,
-    appid
-  }
+  //loop for 5 requests (5 days of data)
+  for (i = 0; i < 5; i++) {
+    const params = {
+      lat,
+      lon,
+      time,
+      appid
+    }
 
-  const config = {
-    url,
-    params
-  }
-
-  // The Requester allows API calls be retry in case of timeout
-  // or connection failure
-  Requester.request(config, customError)
+    const config = {
+      url,
+      params
+    }
+    // The Requester allows API calls be retry in case of timeout
+    // or connection failure
+    Requester.request(config, customError)
     .then(response => {
-      // It's common practice to store the desired value at the top-level
-      // result key. This allows different adapters to be compatible with
-      // one another.
-      response.data.result = Requester.validateResultNumber(response.data, ['main','temp'])
-      callback(response.status, Requester.success(jobRunID, response))
+      //Store average temp data from this day (average across 24hrs)
+      var sum = 0;
+      for (j = 0; j < 24; j++) {
+        sum = sum + response.data.hourly[j].temp;
+      }
+      tempArray[i] = sum/24;
     })
     .catch(error => {
       callback(500, Requester.errored(jobRunID, error))
     })
+    //Subtract 1d in milliseconds each loop
+    time = time - 86400000;
+  }
+
+  //tempArray is now populated with 5d of average temps
+  //Calc standard deviation of prev 4 days
+  const sd = calcStandardDev(tempArray);
+
+  //Report if current day is > 1/2 standard deviation from mean
+  var result = false;
+  if ((tempArray[0] > sd/2 + mean) || (tempArray[0] < mean - sd/2)) {
+    result = true;
+  }
+  callback(response.status,
+    {
+      "id": jobRunID,
+      "data": {"answer": result}
+    });
+}
+
+//Calculates standard deviation of an array of data, in this case, temperatures
+function calcStandardDev(temps) {
+  var tmp = 0;
+  for (i = 1; i < temps.length; i++) {
+    tmp = tmp + temps[i];
+  }
+  const mean = tmp/(temps.length-1);
+  var diffArray = [];
+  for (i =1; i < temps.length; i++) {
+    diffArray[i] = Math.pow((temps[i]-mean), 2);
+  }
+  var variance = 0;
+  for (i =1; i < temps.length; i++) {
+    variance = variance + diffArray[i];
+  }
+  variance = variance/(temps.length-1);
+  return Math.sqrt(variance);
 }
 
 // This is a wrapper to allow the function to work with
