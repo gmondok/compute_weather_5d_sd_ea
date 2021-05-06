@@ -27,24 +27,25 @@ const createRequest = (input, callback) => {
   const lat = validator.validated.data.lat
   const lon = validator.validated.data.lon
   var date = new Date();
-  var time = date.getTime();
+  var dt = Math.floor(date.getTime() / 1000);
   const appid = process.env.API_KEY;
   console.log(appid);
   var tempArray = [];
 
   //loop for 5 requests (5 days of data)
   for (i = 0; i < 5; i++) {
-    const params = {
+    var  params = {
       lat,
       lon,
-      time,
+      dt,
       appid
     }
 
-    const config = {
+    var config = {
       url,
       params
     }
+
     // The Requester allows API calls be retry in case of timeout
     // or connection failure
     Requester.request(config, customError)
@@ -59,20 +60,24 @@ const createRequest = (input, callback) => {
     .catch(error => {
       callback(500, Requester.errored(jobRunID, error))
     })
-    //Subtract 1d in milliseconds each loop
-    time = time - 86400000;
+    //Subtract 1d in seconds each loop
+    dt = dt - 86400;
   }
 
   //tempArray is now populated with 5d of average temps
   //Calc standard deviation of prev 4 days
-  const sd = calcStandardDev(tempArray);
+  let calc = calcStandardDev(tempArray);
+  const mean = calc[0];
+  const sd = calc[1];
+
 
   //Report if current day is > 1/2 standard deviation from mean
   var result = false;
   if ((tempArray[0] > sd/2 + mean) || (tempArray[0] < mean - sd/2)) {
     result = true;
   }
-  callback(response.status,
+ // console.log(statusSum);
+  callback(200,
     {
       "id": jobRunID,
       "data": {"answer": result}
@@ -80,6 +85,7 @@ const createRequest = (input, callback) => {
 }
 
 //Calculates standard deviation of an array of data, in this case, temperatures
+//Returns mean and sd in an array
 function calcStandardDev(temps) {
   var tmp = 0;
   for (i = 1; i < temps.length; i++) {
@@ -95,7 +101,7 @@ function calcStandardDev(temps) {
     variance = variance + diffArray[i];
   }
   variance = variance/(temps.length-1);
-  return Math.sqrt(variance);
+  return [mean, Math.sqrt(variance)];
 }
 
 // This is a wrapper to allow the function to work with
