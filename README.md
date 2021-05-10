@@ -2,6 +2,8 @@
 
 This Chainlink External Adapter calculates if the current day's average temperature is > 1/2 standard deviation away from the average temperatures of the last four days, for a given lat/lon. Returns a simple true/false. It is hardcoded to five days of data since this is the max for the free tier of OpenWeather.
 
+A potential use for External Adpaters similar to this one includes allowing farmers to hedge against their crops being destroyed by surprise weather. With this adapter as a template and a corresponding smart contract, farmers could recieve automatic insurance payouts in the event of extreme weather.
+
 You'll need an API key from the [OpenWeather API](https://home.openweathermap.org/api_keys). NOTE: It takes ~10 minutes for the key to register with the platform. 
 
 ## Input Params
