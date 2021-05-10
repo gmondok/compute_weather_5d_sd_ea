@@ -1,20 +1,6 @@
-# Chainlink NodeJS External Adapter Template
+# Chainlink OpenWeather 5D Standard Deviation Compute Adapter
 
-This template provides a basic framework for developing Chainlink external adapters in NodeJS. Comments are included to assist with development and testing of the external adapter. Once the API-specific values (like query parameters and API key authentication) have been added to the adapter, it is very easy to add some tests to verify that the data will be correctly formatted when returned to the Chainlink node. There is no need to use any additional frameworks or to run a Chainlink node in order to test the adapter.
-
-## Creating your own adapter from this template
-
-Clone this repo and change "WeatherExternalAdapter" below to the name of your project
-
-```bash
-git clone https://github.com/PatrickAlphaC/CL-EA-NodeJS-Template.git -b weather-api WeatherExternalAdapter
-```
-
-Enter into the newly-created directory
-
-```bash
-cd WeatherExternalAdapter
-```
+This Chainlink External Adapter calculates if the current day's average temperature is > 1/2 standard deviation away from the average temperatures of the last four days, for a given lat/lon.
 
 You'll need an API key from the [OpenWeather API](https://home.openweathermap.org/api_keys). NOTE: It takes ~10 minutes for the key to register with the platform. 
 
@@ -24,7 +10,7 @@ See [Install Locally](#install-locally) for a quickstart
 
 ## Input Params
 
-- `q `, `city`, or `town`: The city to get the weather for
+- `lat`, `lon`: The city to get the weather for
 
 ## Output
 
@@ -53,14 +39,6 @@ Install dependencies:
 yarn
 ```
 
-### Test
-
-Run the local tests:
-
-```bash
-yarn test
-```
-
 Natively run the application (defaults to port 8080):
 
 ### Run
@@ -72,7 +50,7 @@ yarn start
 ### Call the external adapter/API server
 
 ```bash
-curl -X POST -H "content-type:application/json" "http://localhost:8080/" --data '{"id": 0,"data":{"city": "Boston"}}'
+curl -X POST -H "content-type:application/json" "http://localhost:8080/" --data '{"id": 0,"data":{"lat": 35, "lon", 139}}'
 ```
 
 ## Docker
