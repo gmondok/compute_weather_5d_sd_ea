@@ -4,8 +4,6 @@ This Chainlink External Adapter calculates if the current day's average temperat
 
 You'll need an API key from the [OpenWeather API](https://home.openweathermap.org/api_keys). NOTE: It takes ~10 minutes for the key to register with the platform. 
 
-See [Install Locally](#install-locally) for a quickstart
-
 ## Input Params
 
 - `lat`, `lon`: The city whose weather data you wish to compute
