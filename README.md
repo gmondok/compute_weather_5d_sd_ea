@@ -1,6 +1,6 @@
 # Chainlink OpenWeather 5D Standard Deviation Compute Adapter
 
-This Chainlink External Adapter calculates if the current day's average temperature is > 1/2 standard deviation away from the average temperatures of the last four days, for a given lat/lon.
+This Chainlink External Adapter calculates if the current day's average temperature is > 1/2 standard deviation away from the average temperatures of the last four days, for a given lat/lon. Returns a simple true/false. It is hardcoded to five days of data since this is the max for the free tier of OpenWeather.
 
 You'll need an API key from the [OpenWeather API](https://home.openweathermap.org/api_keys). NOTE: It takes ~10 minutes for the key to register with the platform. 
 
@@ -10,24 +10,14 @@ See [Install Locally](#install-locally) for a quickstart
 
 ## Input Params
 
-- `lat`, `lon`: The city to get the weather for
+- `lat`, `lon`: The city whose weather data you wish to compute
 
 ## Output
 
 ```json
 {"jobRunID":0,
 "data":{
-  "coord":{"lon":-71.06,"lat":42.36},
-  "weather":[{"id":701,"main":"Mist","description":"mist","icon":"50n"}],
-  "base":"stations",
-  "main":{"temp":293.67,"feels_like":294.97,"temp_min":292.59,"temp_max":294.26,"pressure":1010,"humidity":94},
-  "visibility":2414,
-  "wind":{"speed":3.1,"deg":190},
-  "clouds":{"all":90},
-  "dt":1599095117,
-  "sys":{"type":1,"id":3486,"country":"US","sunrise":1599041470,"sunset":1599088607},"timezone":-14400,"id":4930956,"name":"Boston","cod":200,"result":293.67},
-  "result":293.67,
-  "statusCode":200
+  "answer": false
 }
 ```
 
@@ -45,6 +35,12 @@ Natively run the application (defaults to port 8080):
 
 ```bash
 yarn start
+```
+
+### Set API Key
+
+```bash
+export API_KEY=YOUR_API_KEY
 ```
 
 ### Call the external adapter/API server
